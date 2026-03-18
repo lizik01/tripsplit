@@ -1,0 +1,119 @@
+.expense-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.expense-list-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.expense-list-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.expense-list-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.expense-total {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #888);
+}
+
+.expense-total strong {
+  color: var(--accent, #4f7ef8);
+}
+
+.expense-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-search {
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid var(--border, #e0e0e0);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--input-bg, #fafafa);
+  color: var(--text-primary, #1a1a2e);
+  transition: border-color 0.15s;
+}
+
+.filter-search:focus {
+  border-color: var(--accent, #4f7ef8);
+  background: #fff;
+}
+
+.filter-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filter-chip {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  border: 1.5px solid var(--border, #e0e0e0);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-secondary, #666);
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--accent, #4f7ef8);
+  color: var(--accent, #4f7ef8);
+}
+
+.filter-chip.active {
+  background: var(--accent, #4f7ef8);
+  border-color: var(--accent, #4f7ef8);
+  color: #fff;
+}
+
+.expense-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.expense-list-item {
+  /* wraps ExpenseItem */
+}
+
+.expense-list-status {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary, #888);
+  font-size: 0.95rem;
+}
+
+.expense-list-status.error {
+  color: #e53e3e;
+}
+
+.expense-list-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-secondary, #aaa);
+  font-size: 0.9rem;
+  border: 1.5px dashed var(--border, #e0e0e0);
+  border-radius: 10px;
+}

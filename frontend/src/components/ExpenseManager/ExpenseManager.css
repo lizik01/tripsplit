@@ -1,0 +1,60 @@
+.expense-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1000;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-md, 10px);
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.1));
+  animation: slideIn 0.2s ease;
+  max-width: 280px;
+}
+
+.toast-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1.5px solid #6ee7b7;
+}
+
+.toast-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1.5px solid #fca5a5;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* On wider screens show form + list side by side */
+@media (min-width: 720px) {
+  .expense-manager {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    grid-template-rows: auto;
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  .expense-manager-form {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
