@@ -8,7 +8,7 @@ const TABS = ["Expenses", "Members & Balances"];
 function App() {
   const [activeTab, setActiveTab] = useState(0);
   const [members, setMembers] = useState([]);
-  const tripId = "trip_demo_2025";
+  const tripId = "trip_tokyo_2024";
 
   const fetchMembers = async () => {
     try {
