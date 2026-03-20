@@ -1,0 +1,9 @@
+{
+  "name": "tripsplit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build && mv dist ../dist",
+    "install": "cd backend && npm install"
+  }
+}
