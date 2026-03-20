@@ -13,18 +13,30 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 
+// Middleware to ensure DB connection is active for serverless functions
+app.use(async (req, res, next) => {
+  try {
+    await connectDb();
+    next();
+  } catch (err) {
+    console.error("DB Connection Error:", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
 // Routes
 app.use("/api/expenses", expensesRouter);
-app.use("/api/members", membersRouter);  // ← Jianyu wires this in
+app.use("/api/members", membersRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
-connectDb()
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("Failed to connect to database:", err);
-    process.exit(1);
+// Only listen locally, Vercel Serverless handles the port binding automatically
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Local dev server running on port ${PORT}`);
   });
+}
+
+// Export the Express API so Vercel can run it as a serverless function!
+export default app;
