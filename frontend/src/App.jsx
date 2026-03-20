@@ -1,16 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExpenseManager from "./components/ExpenseManager/ExpenseManager";
+import MemberManager from "./components/MemberManager/MemberManager";
 import "./App.css";
-
-// Jianyu will import MemberManager here
-// import MemberManager from "./components/MemberManager/MemberManager";
 
 const TABS = ["Expenses", "Members & Balances"];
 
 function App() {
   const [activeTab, setActiveTab] = useState(0);
-  // For demo purposes use a single trip; in a real app this comes from a trip selector
+  const [members, setMembers] = useState([]);
   const tripId = "trip_demo_2025";
+
+  const fetchMembers = async () => {
+    try {
+      const res = await fetch(`/api/members?tripId=${tripId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, [tripId]);
 
   return (
     <div className="app">
@@ -40,13 +54,15 @@ function App() {
       </nav>
 
       <main className="app-main">
-        {activeTab === 0 && <ExpenseManager tripId={tripId} />}
+        {activeTab === 0 && (
+          <ExpenseManager tripId={tripId} members={members} />
+        )}
         {activeTab === 1 && (
-          <div className="placeholder-panel">
-            <span className="placeholder-icon">👥</span>
-            <p>Member &amp; Balance Manager</p>
-            <small>Jianyu's section goes here</small>
-          </div>
+          <MemberManager 
+            tripId={tripId} 
+            members={members} 
+            refreshMembers={fetchMembers} 
+          />
         )}
       </main>
 
