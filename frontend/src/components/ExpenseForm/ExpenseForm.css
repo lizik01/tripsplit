@@ -23,6 +23,7 @@
   flex-direction: column;
   gap: 0.35rem;
   flex: 1;
+  min-width: 0;
 }
 
 .form-row {
@@ -40,6 +41,7 @@
 
 .form-group input,
 .form-group select {
+  width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1.5px solid var(--border, #e0e0e0);
   border-radius: 8px;
