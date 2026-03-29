@@ -36,7 +36,7 @@ TripSplit lets a group of travelers:
 - **Browse and filter** expenses by category or keyword
 - **See live balance summaries** — who has paid too much and who needs to pay back
 
-The goal is a **lightweight, real-time ledger** that anyone in the group can update, with no signup friction and no complex settlement algorithms — just a clear view of the numbers.
+The goal is a **lightweight, real-time ledger** that anyone in the group can update, with a clear view of who owes what.
 
 ### Key Features
 
@@ -44,9 +44,10 @@ The goal is a **lightweight, real-time ledger** that anyone in the group can upd
 |---|---|
 | Expense CRUD | Add, view, edit, and delete any expense entry |
 | Member CRUD | Add and remove trip participants |
-| Category filtering | Filter expenses by type (Food, Hotel, Transport, etc.) |
+| Smart splitting | Choose which members share each expense |
+| Category filtering | Filter expenses by type (Food & Drink, Transport, Accommodation, etc.) |
 | Keyword search | Search through expense descriptions |
-| Balance view | See per-member net balances at a glance |
+| Balance view | See per-member net balances (paid vs. owes) at a glance |
 | Seed data | 1,200+ synthetic records for testing and demo |
 | Cloud deployment | Hosted on Vercel with MongoDB Atlas backend |
 
@@ -70,7 +71,7 @@ Built for **CS5610 Web Development** at Northeastern University (Spring 2025), t
 - **Frontend**: React 18 with Hooks, component-scoped CSS, Vite
 - **Backend**: Node.js + Express (ES Modules)
 - **Database**: MongoDB Atlas (native driver, no Mongoose)
-- **Deployment**: Vercel (frontend) + Vercel Serverless (API)
+- **Deployment**: Vercel (frontend + serverless API)
 
 ---
 
@@ -119,14 +120,7 @@ Built for **CS5610 Web Development** at Northeastern University (Spring 2025), t
 
 ### Story 1 — Logging a Group Dinner (Maya)
 
-Maya and five friends just finished a big dinner in Tokyo. She paid ¥18,000 on her card. She opens TripSplit on her phone, taps **"Add Expense"**, fills in:
-
-- Description: *"Ramen dinner – Ichiran Shibuya"*
-- Amount: *$120*
-- Category: *Food*
-- Paid by: *Maya*
-
-She hits save. The expense appears instantly in the list. Her friends can now see it too, and her balance updates to show she's currently owed $100 (her $20 share subtracted from $120 paid).
+Maya and five friends just finished a big dinner in Tokyo. She paid $150 on her card. She opens TripSplit, clicks **+ Add Expense**, fills in the description, amount, date, category (*Food & Drink*), who paid, and checks the boxes for which friends to split it among. She hits **Add Expense**. The entry appears instantly in the list, and her balance updates to show she is owed money.
 
 **Acceptance criteria:**
 - User can fill and submit the expense form
@@ -137,169 +131,63 @@ She hits save. The expense appears instantly in the list. Her friends can now se
 
 ### Story 2 — Checking the Balance Before Checkout (David)
 
-It's the last morning of the trip. David hasn't been paying attention to the ledger. He opens TripSplit, goes to the **Members & Balances** panel, and immediately sees:
-
-> *David: -$87.50 (owes)*
-
-He doesn't need to read every expense. He just Venmoes Maya $87.50 and they're done. No awkward conversation needed.
+It's the last morning of the trip. David opens TripSplit, goes to the **Trip Balances** panel, and immediately sees a red badge showing he owes $277.03. He doesn't need to read every expense — he just Venmoes the right person and they're done. No awkward conversation needed.
 
 **Acceptance criteria:**
-- Balance panel shows each member's net amount (positive = owed money, negative = owes money)
+- Balance panel shows each member's total paid, total owed, and net amount
+- Red badge = owes money; green badge = gets money back
 - Balances update in real time as expenses are added or removed
 
 ---
 
 ### Story 3 — Editing a Wrong Entry (Sophie)
 
-Sophie notices the hotel expense was logged as $400 but the actual split should be $350 — someone entered the wrong amount. She finds the expense in the list, clicks **Edit**, corrects the amount, and saves. The list and balances update instantly.
+Sophie notices the hotel expense was logged with the wrong amount. She finds it in the expense list, clicks the **edit icon**, corrects the amount, and saves. The list and balances update instantly.
 
 **Acceptance criteria:**
-- Each expense row has an Edit button
-- Clicking Edit pre-fills the form with existing data
+- Each expense row has an edit button
+- Clicking edit pre-fills the form with existing data
 - Saving updates the record in MongoDB and re-renders the list
 
 ---
 
 ### Story 4 — Filtering to Review Food Spending (Sophie)
 
-Halfway through the trip, Sophie wants to see how much the group has spent on food so far. She uses the **Category filter** to select *Food* and sees only food-related expenses, with a running total. She's reassured the group is within budget.
+Halfway through the trip, Sophie wants to see how much the group has spent on food. She clicks the **Food & Drink** filter chip and sees only food-related expenses, with an updated total count and sum. She's reassured the group is within budget.
 
 **Acceptance criteria:**
-- Category dropdown filters the expense list client-side
-- Filter applies immediately without reload
-- All expense categories are represented in the dropdown
+- Category filter chips narrow the expense list instantly
+- Total item count and dollar sum update to match the filter
+- All expense categories are available as filter options
 
 ---
 
 ### Story 5 — Removing a Member Who Cancelled (Maya)
 
-One friend had to cancel the trip last minute. Maya removes them from the Members list so they're no longer included in balance calculations.
+One friend had to cancel the trip last minute. Maya clicks the **delete icon** next to their name in the Members panel to remove them, so they're no longer included in balance calculations or the "Paid by" dropdown.
 
 **Acceptance criteria:**
-- Members panel has a Delete button per member
-- Deleting a member removes them from the dropdown in the expense form
+- Members panel has a delete button per member
+- Deleting a member removes them from the expense form's "Paid by" dropdown
 - Balances recalculate to reflect the change
 
 ---
 
 ## 🎨 Design Mockups
 
-### Overall Layout
+The following screenshots are taken from the live deployed application at [tripsplit-gold.vercel.app](https://tripsplit-gold.vercel.app).
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🧳 TripSplit                              Tokyo Trip, June 2025    │
-├────────────────────────────────┬────────────────────────────────────┤
-│                                │                                    │
-│   MEMBERS & BALANCES           │   EXPENSES                         │
-│   ─────────────────────        │   ──────────────────────────────   │
-│                                │                                    │
-│   Maya         +$100.00  ✅    │   [Search...] [Category ▼] [+Add] │
-│   David         -$87.50  💸    │                                    │
-│   Sophie        -$12.50  💸    │   ┌──────────────────────────────┐ │
-│                                │   │ 🍜 Ramen dinner – Ichiran    │ │
-│   [+ Add Member]               │   │  $120  •  Food  •  Maya      │ │
-│                                │   │                  [Edit][Del]  │ │
-│                                │   └──────────────────────────────┘ │
-│                                │   ┌──────────────────────────────┐ │
-│                                │   │ 🏨 Shinjuku Airbnb – Night 1 │ │
-│                                │   │  $350  •  Hotel  •  David    │ │
-│                                │   │                  [Edit][Del]  │ │
-│                                │   └──────────────────────────────┘ │
-│                                │   ┌──────────────────────────────┐ │
-│                                │   │ 🚅 Shinkansen to Kyoto       │ │
-│                                │   │   $80  • Transit • Sophie    │ │
-│                                │   │                  [Edit][Del]  │ │
-│                                │   └──────────────────────────────┘ │
-└────────────────────────────────┴────────────────────────────────────┘
-```
+### Mockup 1 — Add Expense Form
+...
+![Add Expense Form](https://github.com/user-attachments/assets/c49bd76e-a57f-4151-882b-e04812196d81)
 
----
+### Mockup 2 — Expense List with Search & Category Filter
+...
+![Expense List](https://github.com/user-attachments/assets/499e4dc8-2706-40a8-8d08-e8f8ddc8b70b)
 
-### Add / Edit Expense Form (Modal)
-
-```
-┌─────────────────────────────────┐
-│  Add New Expense            [✕] │
-├─────────────────────────────────┤
-│                                 │
-│  Description                    │
-│  ┌─────────────────────────┐    │
-│  │ Ramen dinner – Ichiran  │    │
-│  └─────────────────────────┘    │
-│                                 │
-│  Amount ($)                     │
-│  ┌──────────┐                   │
-│  │  120.00  │                   │
-│  └──────────┘                   │
-│                                 │
-│  Category                       │
-│  ┌─────────────────────────┐    │
-│  │ Food               ▼    │    │
-│  └─────────────────────────┘    │
-│   Food / Hotel / Transit /      │
-│   Activity / Other              │
-│                                 │
-│  Paid by                        │
-│  ┌─────────────────────────┐    │
-│  │ Maya               ▼    │    │
-│  └─────────────────────────┘    │
-│                                 │
-│      [Cancel]  [Save Expense]   │
-└─────────────────────────────────┘
-```
-
----
-
-### Balance Summary Panel
-
-```
-┌──────────────────────────────┐
-│  👥 Members & Balances       │
-├──────────────────────────────┤
-│                              │
-│  Maya                        │
-│  ████████████░░░  +$100.00   │
-│                              │
-│  David                       │
-│  ░░░░████████░░░   -$87.50   │
-│                              │
-│  Sophie                      │
-│  ░░░░░░░░████░░░   -$12.50   │
-│                              │
-│  Total logged: $550.00       │
-│                              │
-│  [+ Add Member]              │
-└──────────────────────────────┘
-```
-
----
-
-### Mobile View (Stacked)
-
-```
-┌─────────────────────┐
-│  🧳 TripSplit       │
-├─────────────────────┤
-│  Balances           │
-│  Maya     +$100  ✅ │
-│  David    -$87   💸 │
-│  Sophie   -$12   💸 │
-├─────────────────────┤
-│  [Search...] [▼Cat] │
-│                     │
-│  🍜 Ramen dinner    │
-│  $120 • Food • Maya │
-│  [Edit]    [Delete] │
-│  ─────────────────  │
-│  🏨 Shinjuku Airbnb │
-│  $350 • Hotel•David │
-│  [Edit]    [Delete] │
-│                     │
-│         [+ Add New] │
-└─────────────────────┘
-```
-
+### Mockup 3 — Trip Balances Panel
+...
+![Trip Balances](https://github.com/user-attachments/assets/b0ce7a55-dd84-4060-b467-336b8311a72b)
 ---
 
 ## 📁 Project Structure
@@ -326,6 +214,7 @@ tripsplit/
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   └── package.json
+├── docs/                       # Screenshots for README
 ├── .eslintrc.json
 ├── .prettierrc
 ├── LICENSE
@@ -380,7 +269,7 @@ node scripts/seed.js  # inserts 1200+ synthetic expense records
 ```bash
 cd frontend
 npm install
-npm run dev          # starts Vite dev server, proxies /api → backend
+npm run dev          # starts Vite dev server on localhost:5173
 ```
 
 ### 6. Open in browser
@@ -393,11 +282,12 @@ http://localhost:5173
 
 ## 📋 How to Use
 
-1. **Add trip members** using the Members panel (left side)
-2. **Log an expense** — fill in description, amount, category, and who paid
-3. **View all expenses** — browse the list, filter by category, or search by keyword
+1. **Add trip members** using the Add Trip Member panel
+2. **Log an expense** — fill in description, amount, date, category, who paid, and who it's split among
+3. **View all expenses** — browse the list, filter by category chip, or search by keyword
 4. **Edit or delete** any expense using the action buttons on each row
-5. **Check balances** — the Members panel shows who owes what in real time
+5. **Check balances** — the Trip Balances panel shows who owes what in real time
+
 
 ---
 
