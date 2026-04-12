@@ -1,6 +1,6 @@
-
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -15,6 +15,18 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// CORS — must be before everything else
+const allowedOrigins = process.env.VERCEL
+  ? [process.env.FRONTEND_URL]          // 在 Vercel 环境变量里设置前端域名
+  : ["http://localhost:5173", "http://localhost:3000"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,                   // 允许携带 cookie
+  })
+);
 
 app.use(express.json());
 
@@ -40,7 +52,7 @@ app.use(
       dbName: process.env.DB_NAME || "tripsplit",
     }),
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24,
       sameSite: process.env.VERCEL ? "none" : "lax",
       secure: !!process.env.VERCEL,
     },
