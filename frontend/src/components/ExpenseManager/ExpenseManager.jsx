@@ -25,14 +25,13 @@ function ExpenseManager({ tripId, members }) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",                          // ← 修复：带上 session cookie
         body: JSON.stringify({ ...formData, tripId }),
       });
-
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Request failed");
       }
-
       showToast(isEditing ? "Expense updated!" : "Expense added!");
       setEditingExpense(null);
       setRefreshTrigger((n) => n + 1);
@@ -43,7 +42,6 @@ function ExpenseManager({ tripId, members }) {
 
   function handleEdit(expense) {
     setEditingExpense(expense);
-    // Scroll form into view on mobile
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -58,7 +56,6 @@ function ExpenseManager({ tripId, members }) {
           {toast.type === "success" ? "✅" : "❌"} {toast.msg}
         </div>
       )}
-
       <section className="expense-manager-form">
         <ExpenseForm
           members={members}
@@ -67,7 +64,6 @@ function ExpenseManager({ tripId, members }) {
           onCancelEdit={handleCancelEdit}
         />
       </section>
-
       <section className="expense-manager-list">
         <ExpenseList
           tripId={tripId}

@@ -17,6 +17,7 @@ const EMPTY_FORM = {
   paidBy: "",
   category: "Food & Drink",
   date: new Date().toISOString().split("T")[0],
+  splitAmong: [],
 };
 
 function ExpenseForm({ members, onSubmit, editingExpense, onCancelEdit }) {
@@ -35,6 +36,7 @@ function ExpenseForm({ members, onSubmit, editingExpense, onCancelEdit }) {
         date: editingExpense.date
           ? new Date(editingExpense.date).toISOString().split("T")[0]
           : EMPTY_FORM.date,
+        splitAmong: editingExpense.splitAmong || [],
       });
     } else {
       setForm(EMPTY_FORM);
@@ -55,6 +57,17 @@ function ExpenseForm({ members, onSubmit, editingExpense, onCancelEdit }) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  }
+
+  function handleSplitChange(memberName) {
+    setForm((prev) => {
+      const current = prev.splitAmong || [];
+      if (current.includes(memberName)) {
+        return { ...prev, splitAmong: current.filter((n) => n !== memberName) };
+      } else {
+        return { ...prev, splitAmong: [...current, memberName] };
+      }
+    });
   }
 
   async function handleSubmit(e) {
@@ -182,7 +195,31 @@ function ExpenseForm({ members, onSubmit, editingExpense, onCancelEdit }) {
           </div>
         </div>
 
-        <div className="form-actions">
+        <div className="form-group" style={{ marginTop: "1rem" }}>
+          <label>Split Among (leave empty for everyone)</label>
+          {members && members.length > 0 ? (
+            <div className="split-among-list" style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "0.5rem" }}>
+              {members.map((m) => {
+                const isChecked = form.splitAmong.includes(m.name);
+                return (
+                  <label key={m._id} style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.9rem", cursor: "pointer", textTransform: "none", fontWeight: "normal" }}>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleSplitChange(m.name)}
+                      style={{ width: "auto" }}
+                    />
+                    {m.name}
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <span style={{ fontSize: "0.85rem", color: "#666", marginTop: "0.5rem" }}>No members available to split. Add members first.</span>
+          )}
+        </div>
+
+        <div className="form-actions" style={{ marginTop: "1rem" }}>
           {isEditing && (
             <button
               type="button"

@@ -42,8 +42,8 @@ function ExpenseItem({ expense, onEdit, onDelete }) {
           )}
         </div>
         {perPerson && (
-          <p className="expense-split">
-            ${perPerson} / person · split among {expense.splitAmong.length}
+          <p className="expense-split" style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>
+            ${perPerson} / person · split among: <strong>{expense.splitAmong.join(", ")}</strong>
           </p>
         )}
       </div>
