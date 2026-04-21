@@ -96,7 +96,7 @@
 }
 
 .btn-primary {
-  background: var(--accent, #4f7ef8);
+  background: var(--success, #28a745);
   color: #fff;
 }
 

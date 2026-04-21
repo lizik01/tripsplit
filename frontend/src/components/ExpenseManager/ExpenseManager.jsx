@@ -2,9 +2,9 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import ExpenseForm from "../ExpenseForm/ExpenseForm";
 import ExpenseList from "../ExpenseList/ExpenseList";
-import "./ExpenseManager.css";
+import styles from "./ExpenseManager.module.css";
 
-function ExpenseManager({ tripId, members }) {
+function ExpenseManager({ tripId, members = [] }) {
   const [editingExpense, setEditingExpense] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [toast, setToast] = useState(null);
@@ -25,7 +25,7 @@ function ExpenseManager({ tripId, members }) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        credentials: "include",                          // ← 修复：带上 session cookie
+        credentials: "include",
         body: JSON.stringify({ ...formData, tripId }),
       });
       if (!res.ok) {
@@ -50,13 +50,13 @@ function ExpenseManager({ tripId, members }) {
   }
 
   return (
-    <div className="expense-manager">
+    <article className={styles["expense-manager"]}>
       {toast && (
-        <div className={`toast toast-${toast.type}`} role="alert">
-          {toast.type === "success" ? "✅" : "❌"} {toast.msg}
+        <div className={`${styles.toast} ${styles[`toast-${toast.type}`]}`} role="alert">
+          <span aria-hidden="true">{toast.type === "success" ? "✅" : "❌"}</span> {toast.msg}
         </div>
       )}
-      <section className="expense-manager-form">
+      <section className={styles["expense-manager-form"]} aria-label="Expense Form">
         <ExpenseForm
           members={members}
           onSubmit={handleSubmit}
@@ -64,14 +64,14 @@ function ExpenseManager({ tripId, members }) {
           onCancelEdit={handleCancelEdit}
         />
       </section>
-      <section className="expense-manager-list">
+      <section className={styles["expense-manager-list"]} aria-label="Expenses List">
         <ExpenseList
           tripId={tripId}
           onEdit={handleEdit}
           refreshTrigger={refreshTrigger}
         />
       </section>
-    </div>
+    </article>
   );
 }
 
@@ -83,10 +83,6 @@ ExpenseManager.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ),
-};
-
-ExpenseManager.defaultProps = {
-  members: [],
 };
 
 export default ExpenseManager;

@@ -58,16 +58,19 @@
   margin-top: 0.5rem;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form .role-select {
   padding: 0.7rem 1rem;
   border: 1.5px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s;
   outline: none;
+  background-color: white;
 }
 
-.auth-form input:focus {
+.auth-form input:focus,
+.auth-form .role-select:focus {
   border-color: #667eea;
 }
 

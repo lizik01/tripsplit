@@ -1,8 +1,8 @@
 /**
- * Seed script — generates 1000+ synthetic expense records
+ * Seed script — generates synthetic groups, members, and expenses for testing
  * Run: node scripts/seed.js
  */
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -20,86 +20,13 @@ const CATEGORIES = [
 ];
 
 const DESCRIPTIONS = {
-  "Food & Drink": [
-    "Team dinner at local restaurant",
-    "Airport lunch",
-    "Breakfast at hotel",
-    "Street food tour",
-    "Grocery run",
-    "Coffee and pastries",
-    "Rooftop bar drinks",
-    "Pizza night",
-    "Sushi dinner",
-    "Brunch",
-  ],
-  Transport: [
-    "Uber to airport",
-    "Train tickets",
-    "Bus passes",
-    "Car rental deposit",
-    "Taxi to hotel",
-    "Ferry tickets",
-    "Subway day pass",
-    "Bike rental",
-    "Lyft to venue",
-    "Toll fees",
-  ],
-  Accommodation: [
-    "Hotel room night 1",
-    "Hotel room night 2",
-    "Airbnb deposit",
-    "Hostel beds",
-    "Resort fee",
-    "Hotel breakfast add-on",
-    "Late checkout fee",
-    "Extra towels/amenities",
-  ],
-  Activities: [
-    "Museum entrance",
-    "City tour",
-    "Surf lesson",
-    "Theme park tickets",
-    "Cooking class",
-    "Kayak rental",
-    "Concert tickets",
-    "Spa session",
-    "Zip line adventure",
-    "Snorkeling tour",
-  ],
-  Shopping: [
-    "Souvenir shopping",
-    "Sunscreen and beach gear",
-    "Local market haul",
-    "Pharmacy supplies",
-    "Luggage storage",
-  ],
-  Other: [
-    "Travel insurance",
-    "Parking fee",
-    "Visa processing",
-    "Currency exchange fee",
-    "Tip pool",
-  ],
+  "Food & Drink": ["Dinner", "Lunch", "Breakfast", "Street food", "Coffee", "Bar tabs"],
+  Transport: ["Uber", "Train", "Bus", "Gas", "Flights", "Ferry"],
+  Accommodation: ["Hotel", "Airbnb", "Hostel", "Resort fee"],
+  Activities: ["Museum", "City tour", "Surf lesson", "Club entry"],
+  Shopping: ["Souvenirs", "Sunscreen", "Market haul"],
+  Other: ["Travel insurance", "Tip pool"],
 };
-
-const NAMES = [
-  "Yazi",
-  "Jianyu",
-  "Alex",
-  "Jordan",
-  "Sam",
-  "Taylor",
-  "Morgan",
-  "Riley",
-];
-
-const TRIP_IDS = [
-  "trip_tokyo_2024",
-  "trip_paris_2024",
-  "trip_bali_2025",
-  "trip_nyc_2024",
-  "trip_cancun_2025",
-];
 
 function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
@@ -115,79 +42,130 @@ function randomDate(start, end) {
   );
 }
 
-function generateExpenses(count = 1200) {
-  const expenses = [];
-  const startDate = new Date("2024-01-01");
-  const endDate = new Date("2025-03-01");
-
-  for (let i = 0; i < count; i++) {
-    const category = randomElement(CATEGORIES);
-    const descriptions = DESCRIPTIONS[category];
-    const description = randomElement(descriptions);
-    const paidBy = randomElement(NAMES);
-    const tripId = randomElement(TRIP_IDS);
-
-    // Generate splitAmong — subset of NAMES
-    const groupSize = Math.floor(randomBetween(2, NAMES.length + 1));
-    const shuffled = [...NAMES].sort(() => 0.5 - Math.random());
-    const splitAmong = shuffled.slice(0, groupSize);
-    if (!splitAmong.includes(paidBy)) splitAmong.push(paidBy);
-
-    // Realistic amounts per category
-    let amount;
-    switch (category) {
-      case "Accommodation":
-        amount = parseFloat(randomBetween(80, 350).toFixed(2));
-        break;
-      case "Transport":
-        amount = parseFloat(randomBetween(5, 120).toFixed(2));
-        break;
-      case "Food & Drink":
-        amount = parseFloat(randomBetween(8, 180).toFixed(2));
-        break;
-      case "Activities":
-        amount = parseFloat(randomBetween(15, 200).toFixed(2));
-        break;
-      case "Shopping":
-        amount = parseFloat(randomBetween(10, 250).toFixed(2));
-        break;
-      default:
-        amount = parseFloat(randomBetween(5, 100).toFixed(2));
-    }
-
-    expenses.push({
-      description,
-      amount,
-      paidBy,
-      category,
-      tripId,
-      splitAmong,
-      date: randomDate(startDate, endDate),
-      createdAt: new Date(),
-    });
-  }
-  return expenses;
-}
-
 async function seed() {
   const client = new MongoClient(uri);
   try {
     await client.connect();
     const db = client.db(dbName);
-    const collection = db.collection("expenses");
+    
+    // Collections
+    const groupsCol = db.collection("groups");
+    const membersCol = db.collection("members");
+    const expensesCol = db.collection("expenses");
 
-    // Clear existing synthetic records (keep manually added ones if any)
-    await collection.deleteMany({ createdAt: { $exists: true } });
+    console.log("Clearing old synthetic data...");
+    await groupsCol.deleteMany({ synthetic: true });
+    await membersCol.deleteMany({ synthetic: true });
+    await expensesCol.deleteMany({ synthetic: true });
 
-    const expenses = generateExpenses(1200);
-    const result = await collection.insertMany(expenses);
-    console.log(`✅ Inserted ${result.insertedCount} synthetic expenses`);
+    // 1. Create a trip for test_user
+    console.log("Seeding data for test_user...");
+    const targetGroupId1 = new ObjectId();
+    const group1 = {
+      _id: targetGroupId1,
+      name: "Tahoe Ski Trip 🏂",
+      createdBy: "test_user",
+      createdAt: new Date(),
+      synthetic: true
+    };
+    await groupsCol.insertOne(group1);
 
-    // Create indexes for common queries
-    await collection.createIndex({ tripId: 1 });
-    await collection.createIndex({ date: -1 });
-    await collection.createIndex({ paidBy: 1 });
-    console.log("✅ Indexes created");
+    const members1 = ["test_user", "test_user2", "Alice", "Bob", "Charlie"];
+    const membersDocs1 = members1.map(name => ({
+      name,
+      tripId: targetGroupId1.toString(),
+      createdAt: new Date(),
+      synthetic: true
+    }));
+    await membersCol.insertMany(membersDocs1);
+
+    // 2. Create a trip for test_user2
+    console.log("Seeding data for test_user2...");
+    const targetGroupId2 = new ObjectId();
+    const group2 = {
+      _id: targetGroupId2,
+      name: "Euro Backpacking 🌍",
+      createdBy: "test_user2",
+      createdAt: new Date(),
+      synthetic: true
+    };
+    await groupsCol.insertOne(group2);
+
+    const members2 = ["test_user2", "test_user", "David", "Eve", "Frank"];
+    const membersDocs2 = members2.map(name => ({
+      name,
+      tripId: targetGroupId2.toString(),
+      createdAt: new Date(),
+      synthetic: true
+    }));
+    await membersCol.insertMany(membersDocs2);
+
+    // 3. Generate Expenses for Group 1
+    const expenses1 = [];
+    for (let i = 0; i < 40; i++) {
+      const category = randomElement(CATEGORIES);
+      const paidBy = randomElement(members1);
+      const splitSize = Math.floor(randomBetween(1, members1.length + 1));
+      const splitAmong = [...members1].sort(() => 0.5 - Math.random()).slice(0, splitSize);
+      if (!splitAmong.includes(paidBy)) splitAmong.push(paidBy); // ensures payer is part of split usually, but let's be generous
+
+      expenses1.push({
+        description: randomElement(DESCRIPTIONS[category]),
+        amount: parseFloat(randomBetween(10, 300).toFixed(2)),
+        paidBy,
+        category,
+        tripId: targetGroupId1.toString(),
+        splitAmong,
+        date: randomDate(new Date("2024-01-01"), new Date("2024-03-01")),
+        createdAt: new Date(),
+        synthetic: true
+      });
+    }
+
+    // Add a Settlement/Payment to test_user
+    expenses1.push({
+      description: "Payment",
+      amount: 150.00,
+      paidBy: "test_user2",
+      category: "Payment",
+      tripId: targetGroupId1.toString(),
+      splitAmong: ["test_user"], // test_user2 pays test_user
+      date: new Date(),
+      createdAt: new Date(),
+      synthetic: true
+    });
+    
+    await expensesCol.insertMany(expenses1);
+
+    // 4. Generate Expenses for Group 2
+    const expenses2 = [];
+    for (let i = 0; i < 60; i++) {
+      const category = randomElement(CATEGORIES);
+      const paidBy = randomElement(members2);
+      const splitSize = Math.floor(randomBetween(2, members2.length + 1));
+      const splitAmong = [...members2].sort(() => 0.5 - Math.random()).slice(0, splitSize);
+      if (!splitAmong.includes(paidBy)) splitAmong.push(paidBy);
+
+      expenses2.push({
+        description: randomElement(DESCRIPTIONS[category]),
+        amount: parseFloat(randomBetween(5, 500).toFixed(2)),
+        paidBy,
+        category,
+        tripId: targetGroupId2.toString(),
+        splitAmong,
+        date: randomDate(new Date("2024-05-01"), new Date("2024-08-01")),
+        createdAt: new Date(),
+        synthetic: true
+      });
+    }
+    await expensesCol.insertMany(expenses2);
+
+    console.log(`✅ Inserted 2 synthetic groups, 10 synthetic members, heavily distributed synthetic expenses for test_user AND test_user2!`);
+
+    await expensesCol.createIndex({ tripId: 1 });
+    await expensesCol.createIndex({ date: -1 });
+    await expensesCol.createIndex({ paidBy: 1 });
+    console.log("✅ Indexes created.");
   } catch (err) {
     console.error("Seed failed:", err);
   } finally {

@@ -145,20 +145,21 @@
 
 .app-username {
   font-size: 0.9rem;
-  color: #ffffffcc;
+  color: var(--text-secondary, #555);
 }
 
 .logout-btn {
   padding: 0.3rem 0.85rem;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--surface, #fff);
+  color: var(--text-primary, #333);
+  border: 1px solid var(--border, #ddd);
   border-radius: 6px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .logout-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--bg-color, #f9fafb);
+  border-color: #bbb;
 }

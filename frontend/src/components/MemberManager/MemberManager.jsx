@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import MemberForm from "./MemberForm";
 import MemberList from "./MemberList";
-import "./MemberManager.css";
+import styles from "./MemberManager.module.css";
 
 function MemberManager({ tripId, members, refreshMembers }) {
   const [expenses, setExpenses] = useState([]);
@@ -97,8 +97,6 @@ function MemberManager({ tripId, members, refreshMembers }) {
 
       showToast("Member updated!");
       refreshMembers();
-      // Also potentially refresh expenses if they are open in another tab, 
-      // but here we can just refresh local expenses if necessary
       fetchExpenses();
     } catch (err) {
       showToast(err.message, "error");
@@ -125,18 +123,18 @@ function MemberManager({ tripId, members, refreshMembers }) {
   }
 
   return (
-    <div className="member-manager">
+    <article className={styles["member-manager"]}>
       {toast && (
         <div className={`toast toast-${toast.type}`} role="alert">
-          {toast.type === "success" ? "✅" : "❌"} {toast.msg}
+          <span aria-hidden="true">{toast.type === "success" ? "✅" : "❌"}</span> {toast.msg}
         </div>
       )}
 
-      <section className="member-manager-form">
+      <section className={styles["member-manager-form"]} aria-label="Add Member">
         <MemberForm onSubmit={handleAddMember} />
       </section>
 
-      <section className="member-manager-list">
+      <section className={styles["member-manager-list"]} aria-label="Member List">
         <MemberList
           members={members}
           balances={balances}
@@ -144,7 +142,7 @@ function MemberManager({ tripId, members, refreshMembers }) {
           onDelete={handleDeleteMember}
         />
       </section>
-    </div>
+    </article>
   );
 }
 

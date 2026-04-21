@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import ExpenseItem from "../ExpenseItem/ExpenseItem";
-import "./ExpenseList.css";
+import styles from "./ExpenseList.module.css";
 
-const CATEGORIES = ["All", "Food & Drink", "Transport", "Accommodation", "Activities", "Shopping", "Other"];
+// Categories derived dynamically from data
 
-function ExpenseList({ tripId, onEdit, refreshTrigger }) {
+function ExpenseList({ tripId = null, onEdit, refreshTrigger = 0 }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,53 +55,57 @@ function ExpenseList({ tripId, onEdit, refreshTrigger }) {
     return matchCategory && matchSearch;
   });
 
+  const dynamicCategories = ["All", ...new Set(expenses.map(e => e.category))];
   const total = filtered.reduce((sum, e) => sum + e.amount, 0);
 
-  if (loading) return <div className="expense-list-status">Loading expenses...</div>;
-  if (error) return <div className="expense-list-status error">{error}</div>;
+  if (loading) return <div className={styles["expense-list-status"]} aria-live="polite">Loading expenses...</div>;
+  if (error) return <div className={`${styles["expense-list-status"]} ${styles["error"]}`} role="alert">{error}</div>;
 
   return (
-    <div className="expense-list-wrapper">
-      <div className="expense-list-header">
-        <div className="expense-list-summary">
-          <h2 className="expense-list-title">Expenses</h2>
-          <span className="expense-total">
+    <div className={styles["expense-list-wrapper"]}>
+      <header className={styles["expense-list-header"]}>
+        <div className={styles["expense-list-summary"]}>
+          <h2 className={styles["expense-list-title"]}>Expenses</h2>
+          <span className={styles["expense-total"]}>
             {filtered.length} items · <strong>${total.toFixed(2)}</strong> total
           </span>
         </div>
 
-        <div className="expense-filters">
+        <div className={styles["expense-filters"]}>
           <input
             type="text"
-            className="filter-search"
+            className={styles["filter-search"]}
             placeholder="Search expenses..."
+            aria-label="Search expenses"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <div className="filter-categories">
-            {CATEGORIES.map((cat) => (
+          <fieldset className={styles["filter-categories"]} style={{ border: "none", padding: 0, margin: 0 }}>
+            <legend className="visually-hidden" style={{ display: 'none' }}>Filter by category</legend>
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
-                className={`filter-chip ${filterCategory === cat ? "active" : ""}`}
+                className={`${styles["filter-chip"]} ${filterCategory === cat ? styles.active : ""}`}
                 onClick={() => setFilterCategory(cat)}
+                aria-pressed={filterCategory === cat}
               >
                 {cat}
               </button>
             ))}
-          </div>
+          </fieldset>
         </div>
-      </div>
+      </header>
 
       {filtered.length === 0 ? (
-        <div className="expense-list-empty">
+        <div className={styles["expense-list-empty"]}>
           {expenses.length === 0
             ? "No expenses yet. Add one above!"
             : "No expenses match your filters."}
         </div>
       ) : (
-        <ul className="expense-list">
+        <ul className={styles["expense-list"]}>
           {filtered.map((expense) => (
-            <li key={expense._id} className="expense-list-item">
+            <li key={expense._id} className={styles["expense-list-item"]}>
               <ExpenseItem
                 expense={expense}
                 onEdit={onEdit}
@@ -119,11 +123,6 @@ ExpenseList.propTypes = {
   tripId: PropTypes.string,
   onEdit: PropTypes.func.isRequired,
   refreshTrigger: PropTypes.number,
-};
-
-ExpenseList.defaultProps = {
-  tripId: null,
-  refreshTrigger: 0,
 };
 
 export default ExpenseList;

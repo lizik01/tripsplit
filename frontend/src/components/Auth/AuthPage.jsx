@@ -1,11 +1,12 @@
-
 import { useState } from "react";
-import "./AuthPage.css";
+import PropTypes from "prop-types";
+import styles from "./AuthPage.module.css";
 
 export default function AuthPage({ onLogin }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export default function AuthPage({ onLogin }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(mode === "register" ? { username, password, role } : { username, password }),
       });
       const data = await res.json();
 
@@ -44,19 +45,19 @@ export default function AuthPage({ onLogin }) {
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <span className="auth-logo">✈️</span>
-          <h1>TripSplit</h1>
+    <main className={styles["auth-wrapper"]}>
+      <section className={styles["auth-card"]} aria-labelledby="auth-heading">
+        <div className={styles["auth-brand"]}>
+          <span className={styles["auth-logo"]} aria-hidden="true">✈️</span>
+          <h1 id="auth-heading">TripSplit</h1>
           <p>Group travel expense tracker</p>
         </div>
 
-        <h2 className="auth-title">
+        <h2 className={styles["auth-title"]}>
           {mode === "login" ? "Welcome back" : "Create account"}
         </h2>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className={styles["auth-form"]} onSubmit={handleSubmit}>
           <label htmlFor="username">Username</label>
           <input
             id="username"
@@ -79,21 +80,37 @@ export default function AuthPage({ onLogin }) {
             autoComplete={mode === "login" ? "current-password" : "new-password"}
           />
 
+          {mode === "register" && (
+            <>
+              <label htmlFor="role">Role</label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+                className={styles["role-select"]}
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </>
+          )}
+
           {message && (
-            <p className={`auth-message ${message.startsWith("✅") ? "success" : "error"}`}>
+            <p className={`${styles["auth-message"]} ${message.startsWith("✅") ? styles["success"] : styles["error"]}`} role="alert">
               {message}
             </p>
           )}
 
-          <button className="auth-submit" type="submit" disabled={loading}>
+          <button className={styles["auth-submit"]} type="submit" disabled={loading}>
             {loading ? "Please wait…" : mode === "login" ? "Log In" : "Register"}
           </button>
         </form>
 
-        <p className="auth-switch-text">
+        <p className={styles["auth-switch-text"]}>
           {mode === "login" ? "Don't have an account?" : "Already have an account?"}
           <button
-            className="auth-switch-btn"
+            className={styles["auth-switch-btn"]}
             onClick={() => {
               setMode(mode === "login" ? "register" : "login");
               setMessage("");
@@ -102,7 +119,11 @@ export default function AuthPage({ onLogin }) {
             {mode === "login" ? "Register" : "Log In"}
           </button>
         </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
+
+AuthPage.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+};

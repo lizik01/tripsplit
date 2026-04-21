@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import styles from "./MemberManager.module.css";
 
 function MemberForm({ onSubmit }) {
   const [name, setName] = useState("");
@@ -24,10 +25,15 @@ function MemberForm({ onSubmit }) {
   }
 
   return (
-    <div className="member-form-wrapper">
-      <h2 className="member-form-title">➕ Add Trip Member</h2>
-      <form className="member-form" onSubmit={handleSubmit} noValidate>
-        <div className="form-group member-form-group">
+    <div className={styles["member-form-wrapper"]}>
+      <h2 className={styles["member-form-title"]}>
+        <span aria-hidden="true">➕</span> Add Trip Member
+      </h2>
+      <form className={styles["member-form"]} onSubmit={handleSubmit} noValidate>
+        <div className={`${styles["form-group"]} ${styles["member-form-group"]}`}>
+          <label htmlFor="memberName" className="visually-hidden" style={{ display: 'none' }}>
+            Member Name
+          </label>
           <input
             id="memberName"
             name="memberName"
@@ -38,13 +44,32 @@ function MemberForm({ onSubmit }) {
               setName(e.target.value);
               if (error) setError("");
             }}
-            className={error ? "input-error" : ""}
+            className={error ? styles["input-error"] : ""}
+            aria-invalid={!!error}
+            style={{ 
+              padding: "0.6rem 0.75rem",
+              border: "1.5px solid var(--border)",
+              borderRadius: "8px",
+              fontSize: "0.95rem"
+            }}
           />
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={loading}
+            style={{
+              padding: "0.6rem 1.25rem",
+              background: "var(--success, #28a745)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: loading ? "not-allowed" : "pointer"
+            }}
+          >
             {loading ? "Adding..." : "Add"}
           </button>
         </div>
-        {error && <span className="error-msg">{error}</span>}
+        {error && <div className={styles["error-msg"]} role="alert" style={{ color: "var(--danger)", fontSize: "0.85rem", marginTop: "0.5rem" }}>{error}</div>}
       </form>
     </div>
   );
