@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ExpenseManager from "./components/ExpenseManager/ExpenseManager";
 import MemberManager from "./components/MemberManager/MemberManager";
+import GroupManager from "./components/GroupManager/GroupManager";
 import AuthPage from "./components/Auth/AuthPage";
 import "./App.css";
 
@@ -11,8 +12,7 @@ function App() {
   const [members, setMembers] = useState([]);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-
-  const tripId = "trip_tokyo_2024";
+  const [activeGroupId, setActiveGroupId] = useState(null);
 
   // Check if already logged in (e.g. page refresh)
   useEffect(() => {
@@ -25,8 +25,9 @@ function App() {
   }, []);
 
   const fetchMembers = async () => {
+    if (!activeGroupId) return;
     try {
-      const res = await fetch(`/api/members?tripId=${tripId}`, {
+      const res = await fetch(`/api/members?tripId=${activeGroupId}`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -39,8 +40,10 @@ function App() {
   };
 
   useEffect(() => {
-    if (user) fetchMembers();
-  }, [user]);
+    if (user && activeGroupId) {
+      fetchMembers();
+    }
+  }, [user, activeGroupId]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", {
@@ -49,6 +52,7 @@ function App() {
     });
     setUser(null);
     setMembers([]);
+    setActiveGroupId(null);
   };
 
   if (authLoading) return <div className="app-loading">Loading…</div>;
@@ -63,9 +67,18 @@ function App() {
             <h1 className="app-title">TripSplit</h1>
           </div>
           <div className="app-header-right">
+            {activeGroupId && (
+              <button 
+                className="back-btn" 
+                onClick={() => setActiveGroupId(null)}
+                style={{ marginRight: '1rem', padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #ddd', background: 'white', cursor: 'pointer' }}
+              >
+                Back to Groups
+              </button>
+            )}
             <p className="app-subtitle">Group travel expense tracker</p>
             <div className="app-user-info">
-              <span className="app-username">👤 {user}</span>
+              <span className="app-username">👤 {user.username} {user.role === 'admin' ? '(Admin)' : ''}</span>
               <button className="logout-btn" onClick={handleLogout}>
                 Log Out
               </button>
@@ -74,33 +87,41 @@ function App() {
         </div>
       </header>
 
-      <nav className="app-tabs" role="tablist">
-        {TABS.map((tab, i) => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={activeTab === i}
-            className={`tab-btn ${activeTab === i ? "active" : ""}`}
-            onClick={() => setActiveTab(i)}
-          >
-            {i === 0 ? "💸 " : "👥 "}
-            {tab}
-          </button>
-        ))}
-      </nav>
+      {!activeGroupId ? (
+        <main className="app-main">
+          <GroupManager onSelectGroup={setActiveGroupId} />
+        </main>
+      ) : (
+        <>
+          <nav className="app-tabs" role="tablist">
+            {TABS.map((tab, i) => (
+              <button
+                key={tab}
+                role="tab"
+                aria-selected={activeTab === i}
+                className={`tab-btn ${activeTab === i ? "active" : ""}`}
+                onClick={() => setActiveTab(i)}
+              >
+                {i === 0 ? "💸 " : "👥 "}
+                {tab}
+              </button>
+            ))}
+          </nav>
 
-      <main className="app-main">
-        {activeTab === 0 && (
-          <ExpenseManager tripId={tripId} members={members} />
-        )}
-        {activeTab === 1 && (
-          <MemberManager
-            tripId={tripId}
-            members={members}
-            refreshMembers={fetchMembers}
-          />
-        )}
-      </main>
+          <main className="app-main">
+            {activeTab === 0 && (
+              <ExpenseManager tripId={activeGroupId} members={members} />
+            )}
+            {activeTab === 1 && (
+              <MemberManager
+                tripId={activeGroupId}
+                members={members}
+                refreshMembers={fetchMembers}
+              />
+            )}
+          </main>
+        </>
+      )}
 
       <footer className="app-footer">
         <p>

@@ -6,6 +6,7 @@ export default function AuthPage({ onLogin }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export default function AuthPage({ onLogin }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(mode === "register" ? { username, password, role } : { username, password }),
       });
       const data = await res.json();
 
@@ -78,6 +79,22 @@ export default function AuthPage({ onLogin }) {
             required
             autoComplete={mode === "login" ? "current-password" : "new-password"}
           />
+
+          {mode === "register" && (
+            <>
+              <label htmlFor="role">Role</label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+                className="role-select"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </>
+          )}
 
           {message && (
             <p className={`auth-message ${message.startsWith("✅") ? "success" : "error"}`}>

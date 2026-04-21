@@ -10,6 +10,7 @@ import { connectDb, getDb } from "./db/connection.js";
 import expensesRouter from "./routes/expenses.js";
 import membersRouter from "./routes/members.js";
 import authRouter from "./routes/auth.js";
+import groupsRouter from "./routes/groups.js";
 
 dotenv.config();
 
@@ -108,6 +109,7 @@ app.use("/api", (req, res, next) => {
 // Protected routes
 app.use("/api/expenses", expensesRouter);
 app.use("/api/members", membersRouter);
+app.use("/api/groups", groupsRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));

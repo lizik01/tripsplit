@@ -9,9 +9,22 @@ router.get("/", async (req, res) => {
   try {
     const db = getDb();
     const query = {};
-    if (req.query.tripId) {
-      query.tripId = req.query.tripId;
+    
+    if (req.user.role !== "admin") {
+      const userGroups = await db.collection("groups").find({ createdBy: req.user.username }).toArray();
+      const groupIds = userGroups.map(g => g._id.toString());
+      if (req.query.tripId) {
+         if (!groupIds.includes(req.query.tripId)) return res.json([]);
+         query.tripId = req.query.tripId;
+      } else {
+         query.tripId = { $in: groupIds };
+      }
+    } else {
+      if (req.query.tripId) {
+        query.tripId = req.query.tripId;
+      }
     }
+
     const expenses = await db
       .collection("expenses")
       .find(query)
