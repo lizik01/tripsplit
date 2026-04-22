@@ -51,6 +51,18 @@ The goal is a **lightweight, real-time ledger** that anyone in the group can upd
 | Seed data | 1,200+ synthetic records for testing and demo |
 | Cloud deployment | Hosted on Vercel with MongoDB Atlas backend |
 
+### Usability & Accessibility Enhancements
+
+- **Responsive Layouts**: Fluid form inputs and flexbox constraints (`min-width: 0`) prevent horizontal overflow on mobile screens, ensuring a seamless experience across all devices.
+- **Smart Data Cascading**: Modifying a member's name seamlessly updates all their linked historical expenses, preventing orphaned records and confusion.
+- **Accessible Selections**: Upgraded the `splitAmong` input to a visual multi-select checkbox group, making it intuitive and error-proof to select participants.
+- **Enhanced Readability**: Expense cards now explicitly list the names of everyone involved in a split rather than just a generic number count, vastly improving transparency.
+
+### Application Logic & Architecture Modifications
+
+- **Group & Trip Isolation**: Overhauled the core logic to strictly associate all members and expenses with a specific `tripId`. This architectural shift natively supports multi-group concurrency, allowing independent travel groups to track ledgers simultaneously without data overlap.
+- **User Authentication & Roles (Architecture Prep)**: The frontend and backend state management have been refactored to support user identity. While currently operating in a frictionless "open access" mode for easy onboarding, the API structure is pre-configured to integrate JWT-based authentication and Role-Based Access Control (RBAC) (e.g., differentiating between a Trip Admin who can delete expenses and a Trip Viewer).
+
 ### Class Context
 
 Built for **CS5610 Web Development** at Northeastern University (Spring 2025), taught by [Professor John Alexis Guerra Gomez](https://johnguerra.co/classes/webDevelopment_spring_2025/).
